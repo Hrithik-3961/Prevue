@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Prevue</string>
+    <string name="take_selfie">Take Selfie</string>
+    <string name="upload_from_gallery">Upload from Gallery</string>
 </resources>

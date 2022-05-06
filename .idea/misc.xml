@@ -3,11 +3,19 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/close_icon.xml" value="0.121" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/crop_icon.xml" value="0.121" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/done_icon.xml" value="0.121" />
         <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/gallery_icon.xml" value="0.137" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/rotate_left_icon.xml" value="0.121" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/rotate_right_icon.xml" value="0.121" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/save_icon.xml" value="0.121" />
         <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/selfie_icon.xml" value="0.137" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/undo_icon.xml" value="0.121" />
         <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/drawable/upload_icon.xml" value="0.137" />
         <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/layout/activity_main.xml" value="0.1796875" />
-        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/layout/fragment_edit.xml" value="0.1796875" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/layout/edit_item.xml" value="0.1796875" />
+        <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/layout/fragment_edit.xml" value="0.14666666666666667" />
         <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/layout/fragment_home.xml" value="0.1796875" />
         <entry key="..\:/AndroidStudio/Prevue/app/src/main/res/xml/provider_paths.xml" value="0.1796875" />
       </map>

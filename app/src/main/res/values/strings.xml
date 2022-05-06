@@ -2,4 +2,11 @@
     <string name="app_name">Prevue</string>
     <string name="take_selfie">Take Selfie</string>
     <string name="upload_from_gallery">Upload from Gallery</string>
+    <string name="undo">Undo</string>
+    <string name="crop">Crop</string>
+    <string name="rotate_left">Rotate left</string>
+    <string name="rotate_left">Rotate left</string>
+    <string name="save_button">Save Button</string>
+    <string name="cancel_button">Cancel Button</string>
+    <string name="preview_image">Preview Image</string>
 </resources>

@@ -22,5 +22,9 @@
         android:id="@+id/editFragment"
         android:name="com.hrithik.prevue.EditFragment"
         android:label="fragment_edit"
-        tools:layout="@layout/fragment_edit" />
+        tools:layout="@layout/fragment_edit" >
+        <argument
+            android:name="image"
+            app:argType="com.hrithik.prevue.Image" />
+    </fragment>
 </navigation>

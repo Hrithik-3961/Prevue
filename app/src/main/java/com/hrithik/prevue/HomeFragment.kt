@@ -18,12 +18,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.hrithik.prevue.databinding.FragmentHomeBinding
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import java.io.File
 
-
-@AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private var _binding: FragmentHomeBinding? = null
@@ -31,26 +28,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels()
 
-    private lateinit var tempImgUri: Uri
-    private lateinit var tempImgFile: File
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
-        binding.apply {
-
-            uploadGalleryBtn.setOnClickListener {
-                viewModel.onUploadFromGalleryClicked()
-            }
-
-            selfieBtn.setOnClickListener {
-                viewModel.onTakeSelfieClicked(requireActivity())
-            }
-
-        }
+        binding.viewModel = viewModel
+        binding.activity = activity
 
         viewModel.permissionRequest.observe(viewLifecycleOwner) { permissionsList ->
             requestPermissions.launch(permissionsList.toTypedArray())
@@ -60,7 +45,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             viewModel.homeEvents.collect { event ->
                 when (event) {
                     is HomeViewModel.HomeEvent.OpenCamera -> {
-                        val root =
+                        /*val root = Environment.getRootDirectory()
                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
                                 .toString()
                         val myFile = File("$root/Prevue")
@@ -71,15 +56,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                             requireContext(),
                             BuildConfig.APPLICATION_ID + ".provider",
                             tempImgFile
-                        )
-                        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                        )*/
+                        /*val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                         intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, tempImgUri)
-                        resultLauncher.launch(intent)
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, event.uri)*/
+                        resultLauncher.launch(event.intent)
+                        //tempImgUri = event.intent.extras?.get(MediaStore.EXTRA_OUTPUT) as Uri
                     }
 
                     is HomeViewModel.HomeEvent.NavigateToEditScreen -> {
-                        val action = HomeFragmentDirections.actionHomeFragmentToEditFragment()
+                        val action = HomeFragmentDirections.actionHomeFragmentToEditFragment(event.image)
                         findNavController().navigate(action)
                     }
                 }
@@ -91,11 +77,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val resultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                binding.imageView.setImageURI(tempImgUri)
-
-                MediaScannerConnection.scanFile(
-                    requireContext(), arrayOf(tempImgFile.toString()), null
-                ) { _, _ -> }
+                viewModel.onImageCaptured()
+                //binding.imageView.setImageURI(tempImgUri)
+//
+//                MediaScannerConnection.scanFile(
+//                    requireContext(), arrayOf(tempImgFile.toString()), null
+//                ) { _, _ -> }
             }
         }
 
@@ -106,7 +93,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 if (!permission.value)
                     flag = false
             }
-            viewModel.onPermissionResult(flag)
+            viewModel.onPermissionResult(requireActivity(), flag)
         }
 
     override fun onDestroy() {

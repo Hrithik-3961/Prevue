@@ -1,13 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".EditFragment">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit Fragment" />
+    <data>
 
-</RelativeLayout>
+        <variable
+            name="viewModel"
+            type="com.hrithik.prevue.EditViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/backgroundColor"
+        tools:context=".EditFragment">
+
+        <LinearLayout
+            android:id="@+id/top_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/cancel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{()->viewModel.onCancelClicked()}"
+                android:src="@drawable/cancel_icon"
+                android:contentDescription="@string/cancel_button" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/save_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{()->viewModel.onSaveClicked()}"
+                android:src="@drawable/save_icon"
+                android:contentDescription="@string/save_button" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/bottom_controls"
+            android:layout_below="@id/top_controls"
+            android:contentDescription="@string/preview_image" />
+
+        <LinearLayout
+            android:id="@+id/bottom_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="?attr/colorOnPrimary"
+            android:paddingVertical="15dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:onClick="@{()->viewModel.onUndoClicked()}"
+                android:text="@string/undo"
+                app:drawableTopCompat="@drawable/undo_icon" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:onClick="@{()->viewModel.onCropClicked()}"
+                android:text="@string/crop"
+                app:drawableTopCompat="@drawable/crop_icon" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:onClick="@{()->viewModel.onRotateLeftClicked()}"
+                android:text="@string/rotate_left"
+                app:drawableTopCompat="@drawable/rotate_left_icon" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:onClick="@{()->viewModel.onRotateRightClicked()}"
+                android:text="@string/rotate_left"
+                app:drawableTopCompat="@drawable/rotate_right_icon" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</layout>

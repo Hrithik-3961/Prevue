@@ -1,9 +1,12 @@
 package com.hrithik.prevue
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.provider.MediaStore
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,17 +14,19 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.*
 
 class HomeViewModel : ViewModel() {
 
+    val image = MutableLiveData<Image>()
     val permissionRequest = MutableLiveData<List<String>>()
 
     private val homeEventChannel = Channel<HomeEvent>()
     val homeEvents = homeEventChannel.receiveAsFlow()
 
     fun onUploadFromGalleryClicked() = viewModelScope.launch {
-        homeEventChannel.send(HomeEvent.NavigateToEditScreen)
+        homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
     }
 
     fun onTakeSelfieClicked(activity: FragmentActivity) = viewModelScope.launch {
@@ -29,6 +34,10 @@ class HomeViewModel : ViewModel() {
         permissions.add(Manifest.permission.CAMERA)
         permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         checkPermissions(activity, permissions)
+    }
+
+    fun onImageCaptured() = viewModelScope.launch {
+        homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
     }
 
     private fun checkPermissions(activity: FragmentActivity, permissionsList: List<String>) {
@@ -51,17 +60,39 @@ class HomeViewModel : ViewModel() {
         if (permissions.isNotEmpty())
             permissionRequest.value = permissions
         else
-            onPermissionResult(true)
+            onPermissionResult(activity, true)
     }
 
-    fun onPermissionResult(granted: Boolean) = viewModelScope.launch {
+    private fun createTempFile(activity: FragmentActivity) = viewModelScope.launch {
+        /*val file = File(activity.filesDir, "Selfie-${System.currentTimeMillis()}.jpg")
+        val uri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file)*/
+        /* val root = Environment.getRootDirectory()
+         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+             .toString()
+         val myFile = File("$root/Prevue")
+         myFile.mkdirs()*/
+        val fname = "Selfie-${System.currentTimeMillis()}.jpg"
+        val file = File(activity.cacheDir, fname)
+        val uri = FileProvider.getUriForFile(
+            activity,
+            BuildConfig.APPLICATION_ID + ".provider",
+            file
+        )
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+        image.value = Image(fname, uri)
+        homeEventChannel.send(HomeEvent.OpenCamera(intent))
+    }
+
+    fun onPermissionResult(activity: FragmentActivity, granted: Boolean) = viewModelScope.launch {
         if (granted)
-            homeEventChannel.send(HomeEvent.OpenCamera)
+            createTempFile(activity)
     }
 
     sealed class HomeEvent {
-        object OpenCamera : HomeEvent()
-        object NavigateToEditScreen : HomeEvent()
+        data class OpenCamera(val intent: Intent) : HomeEvent()
+        data class NavigateToEditScreen(val image: Image) : HomeEvent()
     }
 
 }

@@ -1,25 +1,17 @@
 package com.hrithik.prevue
 
 import android.app.Activity.RESULT_OK
-import android.content.Intent
-import android.media.MediaScannerConnection
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.hrithik.prevue.databinding.FragmentHomeBinding
 import kotlinx.coroutines.flow.collect
-import java.io.File
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -60,7 +52,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         /*val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                         intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
                         intent.putExtra(MediaStore.EXTRA_OUTPUT, event.uri)*/
-                        resultLauncher.launch(event.intent)
+
+                        captureImageResultLauncher.launch(event.intent)
                         //tempImgUri = event.intent.extras?.get(MediaStore.EXTRA_OUTPUT) as Uri
                     }
 
@@ -74,7 +67,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         return binding.root
     }
 
-    private val resultLauncher =
+    private val captureImageResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 viewModel.onImageCaptured()

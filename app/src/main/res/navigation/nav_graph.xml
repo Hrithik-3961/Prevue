@@ -26,5 +26,16 @@
         <argument
             android:name="image"
             app:argType="com.hrithik.prevue.Image" />
+        <action
+            android:id="@+id/action_editFragment_to_cropFragment"
+            app:destination="@id/cropFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/cropFragment"
+        android:name="com.hrithik.prevue.CropFragment"
+        android:label="CropFragment" >
+        <argument
+            android:name="image"
+            app:argType="com.hrithik.prevue.Image" />
     </fragment>
 </navigation>

@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'androidx.navigation.safeargs.kotlin'
     id 'kotlin-parcelize'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -64,5 +65,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
     implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
 
-
+    //Image Cropper
+    //implementation 'com.github.bfrachia:android-image-cropper:2.7.0'
+    //implementation 'id.zelory:compressor:3.0.1'
+    implementation 'com.edmodo:cropper:1.0.1'
 }

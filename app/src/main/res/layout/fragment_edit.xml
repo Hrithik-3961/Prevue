@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="viewModel"
             type="com.hrithik.prevue.EditViewModel" />
@@ -94,7 +93,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:onClick="@{()->viewModel.onRotateRightClicked()}"
-                android:text="@string/rotate_left"
+                android:text="@string/rotate_right"
                 app:drawableTopCompat="@drawable/rotate_right_icon" />
 
         </LinearLayout>

@@ -1,8 +1,13 @@
 package com.hrithik.prevue
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,6 +42,8 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onImageCaptured() = viewModelScope.launch {
+        val bitmap: Bitmap = BitmapFactory.decodeFile(image.value?.path!!)
+        image.value!!.bitmap = bitmap
         homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
     }
 
@@ -72,7 +79,11 @@ class HomeViewModel : ViewModel() {
          val myFile = File("$root/Prevue")
          myFile.mkdirs()*/
         val fname = "Selfie-${System.currentTimeMillis()}.jpg"
-        val file = File(activity.cacheDir, fname)
+        //val file = File(activity.cacheDir, fname)
+        val root = File(activity.cacheDir.toString())
+        if(!root.exists())
+            root.mkdir()
+        val file = File(root, fname)
         val uri = FileProvider.getUriForFile(
             activity,
             BuildConfig.APPLICATION_ID + ".provider",
@@ -81,7 +92,7 @@ class HomeViewModel : ViewModel() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-        image.value = Image(fname, uri)
+        image.value = Image(fname, uri, file.path, null)
         homeEventChannel.send(HomeEvent.OpenCamera(intent))
     }
 

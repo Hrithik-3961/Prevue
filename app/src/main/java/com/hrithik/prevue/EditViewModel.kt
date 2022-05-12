@@ -56,7 +56,7 @@ class EditViewModel : ViewModel() {
                 .toString()
             val myFile = File("$root/Prevue")
             myFile.mkdirs()
-            val fname = "Selfie-${System.currentTimeMillis()}.jpg"
+            val fname = image.value?.name!!
             file = File(myFile, fname)
             file.mkdirs()
             file.createNewFile()

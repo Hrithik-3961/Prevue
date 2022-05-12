@@ -34,7 +34,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             requestPermissions.launch(permissionsList.toTypedArray())
         }
 
-        setFragmentResultListener("edit_request") {_, bundle ->
+        setFragmentResultListener("edit_request") { _, bundle ->
             val result = bundle.get("edit_response") as Image
             viewModel.image.value = result
         }
@@ -42,6 +42,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.homeEvents.collect { event ->
                 when (event) {
+                    is HomeViewModel.HomeEvent.OpenGallery -> {
+                        uploadImageResultLauncher.launch(event.intent)
+                    }
                     is HomeViewModel.HomeEvent.OpenCamera -> {
                         /*val root = Environment.getRootDirectory()
                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
@@ -64,13 +67,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     }
 
                     is HomeViewModel.HomeEvent.NavigateToEditScreen -> {
-                        val action = HomeFragmentDirections.actionHomeFragmentToEditFragment(event.image)
+                        val action =
+                            HomeFragmentDirections.actionHomeFragmentToEditFragment(event.image)
                         findNavController().navigate(action)
                     }
                 }
             }
         }
         return binding.root
+    }
+
+    private val uploadImageResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val uri = result?.data?.data
+            if(uri != null)
+                viewModel.onImagePicked(uri, requireActivity())
+        }
+
     }
 
     private val captureImageResultLauncher =

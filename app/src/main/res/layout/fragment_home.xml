@@ -39,7 +39,7 @@
                 android:id="@+id/upload_gallery_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="@{() -> viewModel.onUploadFromGalleryClicked()}"
+                android:onClick="@{() -> viewModel.onUploadFromGalleryClicked(activity)}"
                 android:src="@drawable/gallery_icon"
                 app:fab_label="@string/upload_from_gallery"
                 app:fab_size="mini" />

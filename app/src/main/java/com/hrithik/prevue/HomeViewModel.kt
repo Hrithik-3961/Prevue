@@ -5,6 +5,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,6 +22,10 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 
+enum class UploadType {
+    NONE, GALLERY, CAMERA
+}
+
 class HomeViewModel : ViewModel() {
 
     val image = MutableLiveData<Image>()
@@ -27,15 +34,29 @@ class HomeViewModel : ViewModel() {
     private val homeEventChannel = Channel<HomeEvent>()
     val homeEvents = homeEventChannel.receiveAsFlow()
 
-    fun onUploadFromGalleryClicked() = viewModelScope.launch {
-        homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
+    private var uploadType = UploadType.NONE
+
+    fun onUploadFromGalleryClicked(activity: FragmentActivity) = viewModelScope.launch {
+        uploadType = UploadType.GALLERY
+        checkPermissions(activity)
     }
 
     fun onTakeSelfieClicked(activity: FragmentActivity) = viewModelScope.launch {
-        val permissions = LinkedList<String>()
-        permissions.add(Manifest.permission.CAMERA)
-        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        checkPermissions(activity, permissions)
+        uploadType = UploadType.CAMERA
+        checkPermissions(activity)
+    }
+
+    fun onImagePicked(uri: Uri, activity: FragmentActivity) = viewModelScope.launch {
+        image.value!!.bitmap = getBitmap(uri, activity)
+        homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
+    }
+
+    private fun getBitmap(uri: Uri, activity: FragmentActivity) : Bitmap {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ImageDecoder.decodeBitmap(ImageDecoder.createSource(activity.contentResolver, uri))
+        } else {
+            MediaStore.Images.Media.getBitmap(activity.contentResolver, uri)
+        }
     }
 
     fun onImageCaptured() = viewModelScope.launch {
@@ -44,8 +65,12 @@ class HomeViewModel : ViewModel() {
         homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
     }
 
-    private fun checkPermissions(activity: FragmentActivity, permissionsList: List<String>) {
-        val permissions = LinkedList<String>()
+    private fun checkPermissions(activity: FragmentActivity) {
+        val permissionsList = LinkedList<String>()
+        permissionsList.add(Manifest.permission.CAMERA)
+        permissionsList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        val requestPermissionsList = LinkedList<String>()
         permissionsList.forEach { permission ->
             if (ContextCompat.checkSelfPermission(
                     activity,
@@ -57,12 +82,12 @@ class HomeViewModel : ViewModel() {
                         permission
                     )
                 ) {
-                    permissions.add(permission)
+                    requestPermissionsList.add(permission)
                 }
             }
         }
-        if (permissions.isNotEmpty())
-            permissionRequest.value = permissions
+        if (requestPermissionsList.isNotEmpty())
+            permissionRequest.value = requestPermissionsList
         else
             onPermissionResult(activity, true)
     }
@@ -75,7 +100,7 @@ class HomeViewModel : ViewModel() {
              .toString()
          val myFile = File("$root/Prevue")
          myFile.mkdirs()*/
-        val fname = "Selfie-${System.currentTimeMillis()}.jpg"
+        val fname = "Image-${System.currentTimeMillis()}.jpg"
         //val file = File(activity.cacheDir, fname)
         val root = File(activity.cacheDir.toString())
         if (!root.exists())
@@ -86,19 +111,28 @@ class HomeViewModel : ViewModel() {
             BuildConfig.APPLICATION_ID + ".provider",
             file
         )
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
         image.value = Image(fname, uri, file.path, null)
-        homeEventChannel.send(HomeEvent.OpenCamera(intent))
+
+        var intent = Intent()
+        if (uploadType == UploadType.GALLERY) {
+            intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+            homeEventChannel.send(HomeEvent.OpenGallery(intent))
+        } else if (uploadType == UploadType.CAMERA) {
+            intent.action = MediaStore.ACTION_IMAGE_CAPTURE
+            intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+            homeEventChannel.send(HomeEvent.OpenCamera(intent))
+        }
     }
 
-    fun onPermissionResult(activity: FragmentActivity, granted: Boolean) = viewModelScope.launch {
+    fun onPermissionResult(activity: FragmentActivity, granted: Boolean) {
         if (granted)
             createTempFile(activity)
     }
 
     sealed class HomeEvent {
+        data class OpenGallery(val intent: Intent) : HomeEvent()
         data class OpenCamera(val intent: Intent) : HomeEvent()
         data class NavigateToEditScreen(val image: Image) : HomeEvent()
     }

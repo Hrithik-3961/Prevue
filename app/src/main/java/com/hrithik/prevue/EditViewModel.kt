@@ -3,10 +3,12 @@ package com.hrithik.prevue
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import android.view.animation.RotateAnimation
 import androidx.collection.LruCache
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,8 +33,8 @@ class EditViewModel : ViewModel() {
     fun onCancelClicked() {
     }
 
-    fun onSaveClicked() = viewModelScope.launch {
-        val file = saveImage()
+    fun onSaveClicked(activity: FragmentActivity) = viewModelScope.launch {
+        val file = saveImage(activity)
         if (file != null) {
             editEventChannel.send(
                 EditEvent.NavigateBackWithResult(
@@ -48,17 +50,14 @@ class EditViewModel : ViewModel() {
             TODO("Show error message")
     }
 
-    private fun saveImage(): File? {
+    private fun saveImage(activity: FragmentActivity): File? {
         var file: File? = null
         try {
-            val root = Environment.getRootDirectory()
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                .toString()
+            val root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
             val myFile = File("$root/Prevue")
             myFile.mkdirs()
-            val fname = image.value?.name!!
-            file = File(myFile, fname)
-            file.mkdirs()
+            val fileName = image.value?.name!!
+            file = File(myFile, fileName)
             file.createNewFile()
             val bitmap = image.value?.bitmap!!
 
@@ -66,6 +65,8 @@ class EditViewModel : ViewModel() {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             out.flush()
             out.close()
+
+            MediaScannerConnection.scanFile(activity, arrayOf(file.toString()), null) { _, _ -> }
         } catch (e: Exception) {
             e.printStackTrace()
         }

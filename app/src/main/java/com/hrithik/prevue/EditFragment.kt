@@ -30,6 +30,7 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
     ): View {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
         binding.viewModel = viewModel
+        binding.activity = activity
 
         val image = navArgs<EditFragmentArgs>().value.image
         viewModel.image.value = image

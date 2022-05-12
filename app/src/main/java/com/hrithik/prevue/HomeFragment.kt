@@ -30,13 +30,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.viewModel = viewModel
         binding.activity = activity
 
-        viewModel.permissionRequest.observe(viewLifecycleOwner) { permissionsList ->
-            requestPermissions.launch(permissionsList.toTypedArray())
-        }
-
         setFragmentResultListener("edit_request") { _, bundle ->
             val result = bundle.get("edit_response") as Image
             viewModel.image.value = result
+        }
+
+        viewModel.image.observe(viewLifecycleOwner) { image ->
+            binding.imageView.setImageBitmap(image.bitmap)
+        }
+
+        viewModel.permissionRequest.observe(viewLifecycleOwner) { permissionsList ->
+            requestPermissions.launch(permissionsList.toTypedArray())
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -46,24 +50,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         uploadImageResultLauncher.launch(event.intent)
                     }
                     is HomeViewModel.HomeEvent.OpenCamera -> {
-                        /*val root = Environment.getRootDirectory()
-                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                                .toString()
-                        val myFile = File("$root/Prevue")
-                        myFile.mkdirs()
-                        val fname = "Selfie-${System.currentTimeMillis()}.jpg"
-                        tempImgFile = File(myFile, fname)
-                        tempImgUri = FileProvider.getUriForFile(
-                            requireContext(),
-                            BuildConfig.APPLICATION_ID + ".provider",
-                            tempImgFile
-                        )*/
-                        /*val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                        intent.putExtra("android.intent.extras.CAMERA_FACING", 1)
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, event.uri)*/
-
                         captureImageResultLauncher.launch(event.intent)
-                        //tempImgUri = event.intent.extras?.get(MediaStore.EXTRA_OUTPUT) as Uri
                     }
 
                     is HomeViewModel.HomeEvent.NavigateToEditScreen -> {
@@ -90,11 +77,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 viewModel.onImageCaptured()
-                //binding.imageView.setImageURI(tempImgUri)
-//
-//                MediaScannerConnection.scanFile(
-//                    requireContext(), arrayOf(tempImgFile.toString()), null
-//                ) { _, _ -> }
             }
         }
 

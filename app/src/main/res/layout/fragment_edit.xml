@@ -7,6 +7,9 @@
         <variable
             name="viewModel"
             type="com.hrithik.prevue.EditViewModel" />
+        <variable
+            name="activity"
+            type="androidx.fragment.app.FragmentActivity" />
     </data>
 
     <RelativeLayout
@@ -38,7 +41,7 @@
                 android:id="@+id/save_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="@{()->viewModel.onSaveClicked()}"
+                android:onClick="@{()->viewModel.onSaveClicked(activity)}"
                 android:src="@drawable/save_icon"
                 android:contentDescription="@string/save_button" />
 

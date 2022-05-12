@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -31,6 +32,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         viewModel.permissionRequest.observe(viewLifecycleOwner) { permissionsList ->
             requestPermissions.launch(permissionsList.toTypedArray())
+        }
+
+        setFragmentResultListener("edit_request") {_, bundle ->
+            val result = bundle.get("edit_response") as Image
+            viewModel.image.value = result
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {

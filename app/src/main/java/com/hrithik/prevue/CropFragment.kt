@@ -14,7 +14,8 @@ import androidx.navigation.fragment.navArgs
 import com.hrithik.prevue.databinding.FragmentCropBinding
 import kotlinx.coroutines.flow.collect
 
-class CropFragment: Fragment(R.layout.fragment_crop) {
+
+class CropFragment : Fragment(R.layout.fragment_crop) {
     private var _binding: FragmentCropBinding? = null
     private val binding get() = _binding!!
 
@@ -27,26 +28,24 @@ class CropFragment: Fragment(R.layout.fragment_crop) {
     ): View {
         _binding = FragmentCropBinding.inflate(layoutInflater, container, false)
         binding.viewModel = viewModel
+        viewModel.bitmap.value = navArgs<CropFragmentArgs>().value.bitmap
 
-        viewModel.image.value = navArgs<EditFragmentArgs>().value.image
-
-        viewModel.image.observe(viewLifecycleOwner) { image ->
-            binding.cropImageView.setImageBitmap(image.bitmap)
+        viewModel.bitmap.observe(viewLifecycleOwner) { bitmap ->
+            binding.cropImageView.setImageBitmap(bitmap)
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.cropEvents.collect { event ->
                 when (event) {
                     is CropViewModel.CropEvent.GetCroppedImage -> {
-                        val bitmap = binding.cropImageView.croppedImage
-                        val img = viewModel.image.value!!
-                        img.bitmap = bitmap
-                        viewModel.image.value = img
+                        val bitmap = binding.cropImageView.croppedImage!!
+                        viewModel.bitmap.value = bitmap
+                        viewModel.onImageCropped()
                     }
                     is CropViewModel.CropEvent.NavigateBackWithResult -> {
                         setFragmentResult(
                             "crop_request",
-                            bundleOf("crop_result" to event.image)
+                            bundleOf("crop_result" to event.bitmap)
                         )
                         findNavController().popBackStack()
                     }

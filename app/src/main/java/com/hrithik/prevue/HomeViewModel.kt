@@ -1,13 +1,10 @@
 package com.hrithik.prevue
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
-import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -81,7 +78,7 @@ class HomeViewModel : ViewModel() {
         val fname = "Selfie-${System.currentTimeMillis()}.jpg"
         //val file = File(activity.cacheDir, fname)
         val root = File(activity.cacheDir.toString())
-        if(!root.exists())
+        if (!root.exists())
             root.mkdir()
         val file = File(root, fname)
         val uri = FileProvider.getUriForFile(

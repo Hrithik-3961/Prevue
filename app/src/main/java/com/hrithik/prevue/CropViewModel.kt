@@ -1,5 +1,6 @@
 package com.hrithik.prevue
 
+import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,22 +9,26 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class CropViewModel : ViewModel() {
-    val image = MutableLiveData<Image>()
+    val bitmap = MutableLiveData<Bitmap>()
 
     private val cropEventChannel = Channel<CropEvent>()
     val cropEvents = cropEventChannel.receiveAsFlow()
 
     fun onCancelClicked() {
+        TODO()
     }
 
     fun onDoneClicked() = viewModelScope.launch {
         cropEventChannel.send(CropEvent.GetCroppedImage)
-        cropEventChannel.send(CropEvent.NavigateBackWithResult(image.value!!))
+    }
+
+    fun onImageCropped() = viewModelScope.launch {
+        cropEventChannel.send(CropEvent.NavigateBackWithResult(bitmap.value!!))
     }
 
     sealed class CropEvent {
         object GetCroppedImage : CropEvent()
-        data class NavigateBackWithResult(val image: Image) : CropEvent()
+        data class NavigateBackWithResult(val bitmap: Bitmap) : CropEvent()
     }
 
 }

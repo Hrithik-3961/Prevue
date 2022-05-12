@@ -1,10 +1,13 @@
 package com.hrithik.prevue
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -28,15 +31,18 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
         binding.viewModel = viewModel
 
-        viewModel.image.value = navArgs<EditFragmentArgs>().value.image
+        val image = navArgs<EditFragmentArgs>().value.image
+        viewModel.image.value = image
 
-        viewModel.image.observe(viewLifecycleOwner) { image ->
-            binding.imageView.setImageBitmap(image.bitmap)
+        viewModel.image.observe(viewLifecycleOwner) { img ->
+            binding.imageView.setImageBitmap(img.bitmap)
         }
 
         setFragmentResultListener("crop_request") { _, bundle ->
-            val result = bundle.get("crop_result") as Image
-            viewModel.image.value = result
+            val result = bundle.get("crop_result") as Bitmap
+            val img = viewModel.image.value!!
+            img.bitmap = result
+            viewModel.image.value = img
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -44,8 +50,18 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                 when (event) {
                     is EditViewModel.EditEvent.NavigateToCropScreen -> {
                         val action =
-                            EditFragmentDirections.actionEditFragmentToCropFragment(event.image)
+                            EditFragmentDirections.actionEditFragmentToCropFragment(event.bitmap)
                         findNavController().navigate(action)
+                    }
+                    is EditViewModel.EditEvent.NavigateBackWithResult -> {
+                        setFragmentResult(
+                            "edit_request",
+                            bundleOf("edit_response" to event.image)
+                        )
+                        findNavController().popBackStack()
+                    }
+                    is EditViewModel.EditEvent.Rotate -> {
+                        binding.imageView.startAnimation(event.rotateAnimation)
                     }
                 }
             }

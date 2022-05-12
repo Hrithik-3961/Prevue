@@ -35,7 +35,7 @@
         android:name="com.hrithik.prevue.CropFragment"
         android:label="CropFragment" >
         <argument
-            android:name="image"
-            app:argType="com.hrithik.prevue.Image" />
+            android:name="bitmap"
+            app:argType="android.graphics.Bitmap" />
     </fragment>
 </navigation>

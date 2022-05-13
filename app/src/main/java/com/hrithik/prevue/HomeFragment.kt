@@ -11,6 +11,7 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.hrithik.prevue.databinding.FragmentHomeBinding
 import kotlinx.coroutines.flow.collect
 
@@ -32,11 +33,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         setFragmentResultListener("edit_request") { _, bundle ->
             val result = bundle.get("edit_response") as Image
-            viewModel.image.value = result
+            viewModel.image.value = Response.success(result)
         }
 
-        viewModel.image.observe(viewLifecycleOwner) { image ->
-            binding.imageView.setImageBitmap(image.bitmap)
+        viewModel.image.observe(viewLifecycleOwner) { response ->
+            when (response.status) {
+                Status.SUCCESS -> {
+                    val image = response.data
+                    binding.imageView.setImageBitmap(image?.bitmap)
+                }
+                Status.ERROR -> {
+                    Snackbar.make(requireView(), response.message, Snackbar.LENGTH_SHORT).show()
+                }
+            }
         }
 
         viewModel.permissionRequest.observe(viewLifecycleOwner) { permissionsList ->
@@ -52,7 +61,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     is HomeViewModel.HomeEvent.OpenCamera -> {
                         captureImageResultLauncher.launch(event.intent)
                     }
-
                     is HomeViewModel.HomeEvent.NavigateToEditScreen -> {
                         val action =
                             HomeFragmentDirections.actionHomeFragmentToEditFragment(event.image)
@@ -64,19 +72,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         return binding.root
     }
 
-    private val uploadImageResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val uri = result?.data?.data
-            if(uri != null)
-                viewModel.onImagePicked(uri, requireActivity())
+    private val uploadImageResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result?.data?.data
+                if (uri != null)
+                    viewModel.onImagePicked(uri, requireActivity())
+            } else {
+                viewModel.image.value = Response.error("Error in picking image from gallery")
+            }
         }
-
-    }
 
     private val captureImageResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 viewModel.onImageCaptured()
+            } else {
+                viewModel.image.value = Response.error("Error in taking selfie")
             }
         }
 

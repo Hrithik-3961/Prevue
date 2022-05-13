@@ -28,7 +28,7 @@ enum class UploadType {
 
 class HomeViewModel : ViewModel() {
 
-    val image = MutableLiveData<Image>()
+    val image = MutableLiveData<Response<Image>>()
     val permissionRequest = MutableLiveData<List<String>>()
 
     private val homeEventChannel = Channel<HomeEvent>()
@@ -47,11 +47,32 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onImagePicked(uri: Uri, activity: FragmentActivity) = viewModelScope.launch {
-        image.value!!.bitmap = getBitmap(uri, activity)
-        homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
+        val img = image.value?.data
+        if (img != null) {
+            img.bitmap = getBitmap(uri, activity)
+            homeEventChannel.send(HomeEvent.NavigateToEditScreen(img))
+        }
     }
 
-    private fun getBitmap(uri: Uri, activity: FragmentActivity) : Bitmap {
+    fun onImageCaptured() = viewModelScope.launch {
+        val img = image.value?.data
+        if (img != null) {
+            val bitmap: Bitmap = BitmapFactory.decodeFile(img.path)
+            img.bitmap = bitmap
+            homeEventChannel.send(HomeEvent.NavigateToEditScreen(img))
+        }
+    }
+
+    fun onPermissionResult(activity: FragmentActivity, granted: Boolean) {
+        if (granted) {
+            val uri = createTempFile(activity)
+            openGalleryOrCamera(uri)
+        } else {
+            image.value = Response.error("Storage and camera permissions required to proceed!")
+        }
+    }
+
+    private fun getBitmap(uri: Uri, activity: FragmentActivity): Bitmap {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             ImageDecoder.decodeBitmap(ImageDecoder.createSource(activity.contentResolver, uri))
         } else {
@@ -59,60 +80,46 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun onImageCaptured() = viewModelScope.launch {
-        val bitmap: Bitmap = BitmapFactory.decodeFile(image.value?.path!!)
-        image.value!!.bitmap = bitmap
-        homeEventChannel.send(HomeEvent.NavigateToEditScreen(image.value!!))
-    }
-
     private fun checkPermissions(activity: FragmentActivity) {
         val permissionsList = LinkedList<String>()
         permissionsList.add(Manifest.permission.CAMERA)
         permissionsList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-        val requestPermissionsList = LinkedList<String>()
         permissionsList.forEach { permission ->
             if (ContextCompat.checkSelfPermission(
                     activity,
                     permission
                 ) == PackageManager.PERMISSION_DENIED
             ) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(
                         activity,
                         permission
                     )
                 ) {
-                    requestPermissionsList.add(permission)
+                    permissionsList.remove(permission)
                 }
             }
         }
-        if (requestPermissionsList.isNotEmpty())
-            permissionRequest.value = requestPermissionsList
-        else
-            onPermissionResult(activity, true)
+        permissionRequest.value = permissionsList
     }
 
-    private fun createTempFile(activity: FragmentActivity) = viewModelScope.launch {
-        /*val file = File(activity.filesDir, "Selfie-${System.currentTimeMillis()}.jpg")
-        val uri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file)*/
-        /* val root = Environment.getRootDirectory()
-         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-             .toString()
-         val myFile = File("$root/Prevue")
-         myFile.mkdirs()*/
-        val fname = "Image-${System.currentTimeMillis()}.jpg"
-        //val file = File(activity.cacheDir, fname)
+    private fun createTempFile(activity: FragmentActivity): Uri {
+        val fileName = "Image-${System.currentTimeMillis()}.jpg"
         val root = File(activity.cacheDir.toString())
         if (!root.exists())
             root.mkdir()
-        val file = File(root, fname)
+        val file = File(root, fileName)
         val uri = FileProvider.getUriForFile(
             activity,
             BuildConfig.APPLICATION_ID + ".provider",
             file
         )
-        image.value = Image(fname, uri, file.path, null)
+        val img = Image(fileName, uri, file.path, null)
+        image.value = Response.success(img)
+        return uri
+    }
 
+    private fun openGalleryOrCamera(uri: Uri) = viewModelScope.launch {
         var intent = Intent()
         if (uploadType == UploadType.GALLERY) {
             intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -124,11 +131,6 @@ class HomeViewModel : ViewModel() {
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
             homeEventChannel.send(HomeEvent.OpenCamera(intent))
         }
-    }
-
-    fun onPermissionResult(activity: FragmentActivity, granted: Boolean) {
-        if (granted)
-            createTempFile(activity)
     }
 
     sealed class HomeEvent {

@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.android.material.snackbar.Snackbar
 import com.hrithik.prevue.databinding.FragmentCropBinding
 import kotlinx.coroutines.flow.collect
 
@@ -28,19 +29,31 @@ class CropFragment : Fragment(R.layout.fragment_crop) {
     ): View {
         _binding = FragmentCropBinding.inflate(layoutInflater, container, false)
         binding.viewModel = viewModel
-        viewModel.bitmap.value = navArgs<CropFragmentArgs>().value.bitmap
+        val bitmap = navArgs<CropFragmentArgs>().value.bitmap
+        viewModel.bitmap.value = Response.success(bitmap)
 
-        viewModel.bitmap.observe(viewLifecycleOwner) { bitmap ->
-            binding.cropImageView.setImageBitmap(bitmap)
+        viewModel.bitmap.observe(viewLifecycleOwner) { response ->
+            when(response.status) {
+                Status.SUCCESS -> {
+                    binding.cropImageView.setImageBitmap(response.data)
+                }
+                Status.ERROR -> {
+                    Snackbar.make(requireView(), response.message, Snackbar.LENGTH_SHORT).show()
+                }
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.cropEvents.collect { event ->
                 when (event) {
                     is CropViewModel.CropEvent.GetCroppedImage -> {
-                        val bitmap = binding.cropImageView.croppedImage!!
-                        viewModel.bitmap.value = bitmap
-                        viewModel.onImageCropped()
+                        val bmp = binding.cropImageView.croppedImage
+                        if (bmp != null) {
+                            viewModel.bitmap.value = Response.success(bmp)
+                            viewModel.onImageCropped()
+                        } else {
+                            viewModel.bitmap.value = Response.error("Error occurred in cropping the image")
+                        }
                     }
                     is CropViewModel.CropEvent.NavigateBackWithResult -> {
                         setFragmentResult(

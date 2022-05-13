@@ -48,7 +48,7 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         }
 
         setFragmentResultListener("crop_request") { _, bundle ->
-            val result = bundle.get("crop_result") as Bitmap
+            val result = bundle.get("crop_result") as Bitmap?
             val img = viewModel.image.value
             if (img != null) {
                 img.data?.bitmap = result

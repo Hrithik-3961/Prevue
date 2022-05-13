@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class CropViewModel : ViewModel() {
-    val bitmap = MutableLiveData<Bitmap>()
+    val bitmap = MutableLiveData<Response<Bitmap>>()
 
     private val cropEventChannel = Channel<CropEvent>()
     val cropEvents = cropEventChannel.receiveAsFlow()
 
-    fun onCancelClicked() {
-        TODO()
+    fun onCancelClicked() =viewModelScope.launch {
+        cropEventChannel.send(CropEvent.NavigateBackWithResult(null))
     }
 
     fun onDoneClicked() = viewModelScope.launch {
@@ -23,12 +23,13 @@ class CropViewModel : ViewModel() {
     }
 
     fun onImageCropped() = viewModelScope.launch {
-        cropEventChannel.send(CropEvent.NavigateBackWithResult(bitmap.value!!))
+        val bmp = bitmap.value?.data!!
+        cropEventChannel.send(CropEvent.NavigateBackWithResult(bmp))
     }
 
     sealed class CropEvent {
         object GetCroppedImage : CropEvent()
-        data class NavigateBackWithResult(val bitmap: Bitmap) : CropEvent()
+        data class NavigateBackWithResult(val bitmap: Bitmap?) : CropEvent()
     }
 
 }

@@ -32,8 +32,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.activity = activity
 
         setFragmentResultListener("edit_request") { _, bundle ->
-            val result = bundle.get("edit_response") as Image
-            viewModel.image.value = Response.success(result)
+            val result = bundle.get("edit_response") as Image?
+            if (result != null) {
+                viewModel.image.value = Response.success(result)
+            }
         }
 
         viewModel.image.observe(viewLifecycleOwner) { response ->

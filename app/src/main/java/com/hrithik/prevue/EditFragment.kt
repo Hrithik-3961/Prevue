@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.android.material.snackbar.Snackbar
 import com.hrithik.prevue.databinding.FragmentEditBinding
 import kotlinx.coroutines.flow.collect
 
@@ -33,17 +34,26 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         binding.activity = activity
 
         val image = navArgs<EditFragmentArgs>().value.image
-        viewModel.image.value = image
+        viewModel.image.value = Response.success(image)
 
-        viewModel.image.observe(viewLifecycleOwner) { img ->
-            binding.imageView.setImageBitmap(img.bitmap)
+        viewModel.image.observe(viewLifecycleOwner) { response ->
+            when(response.status) {
+                Status.SUCCESS -> {
+                    binding.imageView.setImageBitmap(response.data?.bitmap)
+                }
+                Status.ERROR -> {
+                    Snackbar.make(requireView(), response.message, Snackbar.LENGTH_SHORT).show()
+                }
+            }
         }
 
         setFragmentResultListener("crop_request") { _, bundle ->
             val result = bundle.get("crop_result") as Bitmap
-            val img = viewModel.image.value!!
-            img.bitmap = result
-            viewModel.image.value = img
+            val img = viewModel.image.value
+            if (img != null) {
+                img.data?.bitmap = result
+                viewModel.image.value = img
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -61,7 +71,7 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                         )
                         findNavController().popBackStack()
                     }
-                    is EditViewModel.EditEvent.Rotate -> {
+                    is EditViewModel.EditEvent.RotateImage -> {
                         binding.imageView.startAnimation(event.rotateAnimation)
                     }
                 }

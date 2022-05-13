@@ -21,7 +21,7 @@ import java.lang.ref.SoftReference
 
 
 class EditViewModel : ViewModel() {
-    val image = MutableLiveData<Image>()
+    val image = MutableLiveData<Response<Image>>()
     private var mRotation = 0F
 
     private val cacheSize = 8 * 1024 * 1024
@@ -30,7 +30,8 @@ class EditViewModel : ViewModel() {
     private val editEventChannel = Channel<EditEvent>()
     val editEvents = editEventChannel.receiveAsFlow()
 
-    fun onCancelClicked() {
+    fun onCancelClicked() = viewModelScope.launch {
+        editEventChannel.send(EditEvent.NavigateBackWithResult(null))
     }
 
     fun onSaveClicked(activity: FragmentActivity) = viewModelScope.launch {
@@ -47,19 +48,70 @@ class EditViewModel : ViewModel() {
                 )
             )
         } else
-            TODO("Show error message")
+            image.value = Response.error("Unable to save the image!")
+    }
+
+    fun onUndoClicked() = viewModelScope.launch {
+        val data = cache.remove(cache.size() - 1)?.get()!!
+        val img = image.value?.data
+        if (img != null) {
+            img.bitmap = data
+            image.value = Response.success(img)
+        }
+    }
+
+    fun onCropClicked() = viewModelScope.launch {
+        val img = image.value?.data!!
+        val bitmap = img.bitmap!!
+        cache.put(cache.size(), SoftReference(bitmap))
+        editEventChannel.send(EditEvent.NavigateToCropScreen(bitmap))
+    }
+
+    fun onRotateLeftClicked() = viewModelScope.launch {
+        mRotation -= 90
+        editEventChannel.send(EditEvent.RotateImage(getRotateAnimation(mRotation + 90)))
+        rotateBitmap(-90F)
+    }
+
+    fun onRotateRightClicked() = viewModelScope.launch {
+        mRotation += 90
+        editEventChannel.send(EditEvent.RotateImage(getRotateAnimation(mRotation - 90)))
+        rotateBitmap(90F)
+    }
+
+    private fun getRotateAnimation(fromDegrees: Float): RotateAnimation {
+        val rotateAnimation = RotateAnimation(
+            fromDegrees, mRotation, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+            RotateAnimation.RELATIVE_TO_SELF, 0.5f
+        )
+        rotateAnimation.duration = 500
+        rotateAnimation.fillAfter = true
+        return rotateAnimation
+    }
+
+    private fun rotateBitmap(degrees: Float) {
+        val img = image.value?.data!!
+        cache.put(cache.size(), SoftReference(img.bitmap))
+        val matrix = Matrix()
+        var bitmap = img.bitmap!!
+        matrix.postRotate(degrees)
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        img.bitmap = bitmap
+        image.value = Response.success(img)
     }
 
     private fun saveImage(activity: FragmentActivity): File? {
         var file: File? = null
         try {
-            val root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
+            val root =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
             val myFile = File("$root/Prevue")
             myFile.mkdirs()
-            val fileName = image.value?.name!!
+            val img = image.value?.data!!
+            val fileName = img.name
             file = File(myFile, fileName)
             file.createNewFile()
-            val bitmap = image.value?.bitmap!!
+            val bitmap = img.bitmap!!
 
             val out = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
@@ -73,55 +125,9 @@ class EditViewModel : ViewModel() {
         return file
     }
 
-    fun onUndoClicked() = viewModelScope.launch {
-        val data = cache.remove(cache.size() - 1)?.get()!!
-        val img = image.value!!
-        img.bitmap = data
-        image.value = img
-    }
-
-    fun onCropClicked() = viewModelScope.launch {
-        val bitmap = image.value!!.bitmap!!
-        cache.put(cache.size(), SoftReference(bitmap))
-        editEventChannel.send(EditEvent.NavigateToCropScreen(bitmap))
-    }
-
-    fun onRotateLeftClicked() = viewModelScope.launch {
-        cache.put(cache.size(), SoftReference(image.value?.bitmap))
-        mRotation -= 90
-        editEventChannel.send(EditEvent.Rotate(getRotateAnimation(mRotation + 90)))
-        val matrix = Matrix()
-        var bitmap = image.value?.bitmap!!
-        matrix.postRotate(-90f)
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        image.value?.bitmap = bitmap
-    }
-
-    fun onRotateRightClicked() = viewModelScope.launch {
-        cache.put(cache.size(), SoftReference(image.value?.bitmap))
-        mRotation += 90
-        editEventChannel.send(EditEvent.Rotate(getRotateAnimation(mRotation - 90)))
-        val matrix = Matrix()
-        var bitmap = image.value?.bitmap!!
-        matrix.postRotate(90f)
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        image.value?.bitmap = bitmap
-    }
-
-    private fun getRotateAnimation(fromDegrees: Float): RotateAnimation {
-        val rotateAnimation = RotateAnimation(
-            fromDegrees, mRotation, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-            RotateAnimation.RELATIVE_TO_SELF, 0.5f
-        )
-        rotateAnimation.duration = 500
-        rotateAnimation.fillAfter = true
-        return rotateAnimation
-    }
-
     sealed class EditEvent {
         data class NavigateToCropScreen(val bitmap: Bitmap) : EditEvent()
-        data class NavigateBackWithResult(val image: Image) : EditEvent()
-        data class Rotate(val rotateAnimation: RotateAnimation) : EditEvent()
+        data class NavigateBackWithResult(val image: Image?) : EditEvent()
+        data class RotateImage(val rotateAnimation: RotateAnimation) : EditEvent()
     }
-
 }

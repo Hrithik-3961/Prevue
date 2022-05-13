@@ -86,7 +86,7 @@ class EditViewModel : ViewModel() {
             fromDegrees, mRotation, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
             RotateAnimation.RELATIVE_TO_SELF, 0.5f
         )
-        rotateAnimation.duration = 500
+        rotateAnimation.duration = 350
         rotateAnimation.fillAfter = true
         return rotateAnimation
     }
@@ -98,8 +98,7 @@ class EditViewModel : ViewModel() {
         var bitmap = img.bitmap!!
         matrix.postRotate(degrees)
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        img.bitmap = bitmap
-        image.value = Response.success(img)
+        image.value!!.data?.bitmap = bitmap
     }
 
     private fun saveImage(activity: FragmentActivity): File? {

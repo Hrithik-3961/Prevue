@@ -40,6 +40,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             val result = bundle.get(Constants.EDIT_RESPONSE) as Image?
             if (result != null) {
                 viewModel.image.value = Response.success(result)
+            } else {
+                viewModel.image.value = Response.success(null)
             }
         }
 

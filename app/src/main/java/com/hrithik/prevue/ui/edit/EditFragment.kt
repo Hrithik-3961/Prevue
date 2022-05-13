@@ -40,23 +40,23 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         val image = navArgs<EditFragmentArgs>().value.image
         viewModel.image.value = Response.success(image)
 
-        viewModel.image.observe(viewLifecycleOwner) { response ->
-            when(response.status) {
-                Status.SUCCESS -> {
-                    binding.imageView.setImageBitmap(response.data?.bitmap)
-                }
-                Status.ERROR -> {
-                    Snackbar.make(requireView(), response.message, Snackbar.LENGTH_SHORT).show()
-                }
-            }
-        }
-
         setFragmentResultListener(Constants.CROP_REQUEST) { _, bundle ->
             val result = bundle.get(Constants.CROP_RESPONSE) as Bitmap?
             val img = viewModel.image.value
             if (img != null) {
                 img.data?.bitmap = result
                 viewModel.image.value = img
+            }
+        }
+
+        viewModel.image.observe(viewLifecycleOwner) { response ->
+            when (response.status) {
+                Status.SUCCESS -> {
+                    binding.imageView.setImageBitmap(response.data?.bitmap)
+                }
+                Status.ERROR -> {
+                    Snackbar.make(requireView(), response.message, Snackbar.LENGTH_SHORT).show()
+                }
             }
         }
 

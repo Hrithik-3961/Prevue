@@ -6,14 +6,14 @@
 
         <variable
             name="viewModel"
-            type="com.hrithik.prevue.CropViewModel" />
+            type="com.hrithik.prevue.ui.crop.CropViewModel" />
     </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/backgroundColor"
-        tools:context=".CropFragment">
+        tools:context=".ui.crop.CropFragment">
 
         <LinearLayout
             android:id="@+id/top_controls"

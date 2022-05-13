@@ -66,6 +66,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
 
     //Image Cropper
-    implementation 'com.edmodo:cropper:1.0.1'
     implementation 'com.github.CanHub:Android-Image-Cropper:4.2.1'
 }

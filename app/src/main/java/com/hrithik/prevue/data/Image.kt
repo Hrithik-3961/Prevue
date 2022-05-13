@@ -1,4 +1,4 @@
-package com.hrithik.prevue
+package com.hrithik.prevue.data
 
 import android.graphics.Bitmap
 import android.net.Uri

@@ -1,4 +1,4 @@
-package com.hrithik.prevue
+package com.hrithik.prevue.ui.edit
 
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -14,7 +14,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
+import com.hrithik.prevue.R
 import com.hrithik.prevue.databinding.FragmentEditBinding
+import com.hrithik.prevue.util.Constants
+import com.hrithik.prevue.util.Response
+import com.hrithik.prevue.util.Status
 import kotlinx.coroutines.flow.collect
 
 class EditFragment : Fragment(R.layout.fragment_edit) {
@@ -47,8 +51,8 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
             }
         }
 
-        setFragmentResultListener("crop_request") { _, bundle ->
-            val result = bundle.get("crop_result") as Bitmap?
+        setFragmentResultListener(Constants.CROP_REQUEST) { _, bundle ->
+            val result = bundle.get(Constants.CROP_RESPONSE) as Bitmap?
             val img = viewModel.image.value
             if (img != null) {
                 img.data?.bitmap = result
@@ -66,8 +70,8 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                     }
                     is EditViewModel.EditEvent.NavigateBackWithResult -> {
                         setFragmentResult(
-                            "edit_request",
-                            bundleOf("edit_response" to event.image)
+                            Constants.EDIT_REQUEST,
+                            bundleOf(Constants.EDIT_RESPONSE to event.image)
                         )
                         findNavController().popBackStack()
                     }

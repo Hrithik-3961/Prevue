@@ -1,4 +1,4 @@
-package com.hrithik.prevue
+package com.hrithik.prevue.ui.crop
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
+import com.hrithik.prevue.R
 import com.hrithik.prevue.databinding.FragmentCropBinding
+import com.hrithik.prevue.util.Constants
+import com.hrithik.prevue.util.Response
+import com.hrithik.prevue.util.Status
 import kotlinx.coroutines.flow.collect
 
 
@@ -57,8 +61,8 @@ class CropFragment : Fragment(R.layout.fragment_crop) {
                     }
                     is CropViewModel.CropEvent.NavigateBackWithResult -> {
                         setFragmentResult(
-                            "crop_request",
-                            bundleOf("crop_result" to event.bitmap)
+                            Constants.CROP_REQUEST,
+                            bundleOf(Constants.CROP_RESPONSE to event.bitmap)
                         )
                         findNavController().popBackStack()
                     }

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.hrithik.prevue.HomeFragment"
+        android:name="com.hrithik.prevue.ui.home.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
@@ -20,19 +20,19 @@
     </fragment>
     <fragment
         android:id="@+id/editFragment"
-        android:name="com.hrithik.prevue.EditFragment"
+        android:name="com.hrithik.prevue.ui.edit.EditFragment"
         android:label="fragment_edit"
         tools:layout="@layout/fragment_edit" >
         <argument
             android:name="image"
-            app:argType="com.hrithik.prevue.Image" />
+            app:argType="com.hrithik.prevue.data.Image" />
         <action
             android:id="@+id/action_editFragment_to_cropFragment"
             app:destination="@id/cropFragment" />
     </fragment>
     <fragment
         android:id="@+id/cropFragment"
-        android:name="com.hrithik.prevue.CropFragment"
+        android:name="com.hrithik.prevue.ui.crop.CropFragment"
         android:label="CropFragment" >
         <argument
             android:name="bitmap"

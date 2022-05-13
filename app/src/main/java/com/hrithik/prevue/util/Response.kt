@@ -1,4 +1,4 @@
-package com.hrithik.prevue
+package com.hrithik.prevue.util
 
 enum class Status {
     SUCCESS, ERROR

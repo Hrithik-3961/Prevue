@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.hrithik.prevue.EditViewModel" />
+            type="com.hrithik.prevue.ui.edit.EditViewModel" />
         <variable
             name="activity"
             type="androidx.fragment.app.FragmentActivity" />
@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/backgroundColor"
-        tools:context=".EditFragment">
+        tools:context=".ui.edit.EditFragment">
 
         <LinearLayout
             android:id="@+id/top_controls"

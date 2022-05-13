@@ -1,4 +1,4 @@
-package com.hrithik.prevue
+package com.hrithik.prevue.ui.home
 
 import android.app.Activity.RESULT_OK
 import android.os.Bundle
@@ -12,7 +12,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.hrithik.prevue.R
+import com.hrithik.prevue.data.Image
 import com.hrithik.prevue.databinding.FragmentHomeBinding
+import com.hrithik.prevue.util.Constants
+import com.hrithik.prevue.util.Response
+import com.hrithik.prevue.util.Status
 import kotlinx.coroutines.flow.collect
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
@@ -31,8 +36,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.viewModel = viewModel
         binding.activity = activity
 
-        setFragmentResultListener("edit_request") { _, bundle ->
-            val result = bundle.get("edit_response") as Image?
+        setFragmentResultListener(Constants.EDIT_REQUEST) { _, bundle ->
+            val result = bundle.get(Constants.EDIT_RESPONSE) as Image?
             if (result != null) {
                 viewModel.image.value = Response.success(result)
             }

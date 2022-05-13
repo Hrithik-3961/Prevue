@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.hrithik.prevue.HomeViewModel" />
+            type="com.hrithik.prevue.ui.home.HomeViewModel" />
         <variable
             name="activity"
             type="androidx.fragment.app.FragmentActivity" />
@@ -15,7 +15,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".HomeFragment">
+        tools:context=".ui.home.HomeFragment">
 
         <ImageView
             android:id="@+id/image_view"

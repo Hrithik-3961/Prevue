@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -36,6 +37,14 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
         binding.viewModel = viewModel
         binding.activity = activity
+
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    viewModel.onCancelClicked()
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(callback)
 
         val image = navArgs<EditFragmentArgs>().value.image
         viewModel.image.value = Response.success(image)
@@ -69,7 +78,13 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                         findNavController().navigate(action)
                     }
                     is EditViewModel.EditEvent.NavigateBackWithResult -> {
-                        Snackbar.make(requireView(), "Image saved successfully", Snackbar.LENGTH_SHORT).show()
+                        if (event.image != null) {
+                            Snackbar.make(
+                                requireView(),
+                                "Image saved successfully",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
                         setFragmentResult(
                             Constants.EDIT_REQUEST,
                             bundleOf(Constants.EDIT_RESPONSE to event.image)

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -35,6 +36,14 @@ class CropFragment : Fragment(R.layout.fragment_crop) {
         binding.viewModel = viewModel
         val bitmap = navArgs<CropFragmentArgs>().value.bitmap
         viewModel.bitmap.value = Response.success(bitmap)
+
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    viewModel.onCancelClicked()
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(callback)
 
         viewModel.bitmap.observe(viewLifecycleOwner) { response ->
             when(response.status) {

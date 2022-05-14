@@ -51,10 +51,10 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
 
         setFragmentResultListener(Constants.CROP_REQUEST) { _, bundle ->
             val result = bundle.get(Constants.CROP_RESPONSE) as Bitmap?
-            val img = viewModel.image.value
+            val img = viewModel.image.value?.data
             if (img != null && result != null) {
-                img.data?.bitmap = result
-                viewModel.image.value = img
+                img.bitmap = result
+                viewModel.image.value = Response.success(img)
             }
         }
 
@@ -90,9 +90,6 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                             bundleOf(Constants.EDIT_RESPONSE to event.image)
                         )
                         findNavController().popBackStack()
-                    }
-                    is EditViewModel.EditEvent.RotateImage -> {
-                        binding.imageView.startAnimation(event.rotateAnimation)
                     }
                 }
             }

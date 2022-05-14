@@ -6,7 +6,6 @@ import android.graphics.Matrix
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
-import android.view.animation.RotateAnimation
 import androidx.collection.LruCache
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
@@ -24,7 +23,7 @@ import java.lang.ref.SoftReference
 
 class EditViewModel : ViewModel() {
     val image = MutableLiveData<Response<Image>>()
-    private var mRotation = 0F
+    //private var mRotation = 0F
 
     private val cacheSize = 8 * 1024 * 1024
     private val cache = LruCache<Int, SoftReference<Bitmap>>(cacheSize)
@@ -53,7 +52,7 @@ class EditViewModel : ViewModel() {
             image.value = Response.error("Unable to save the image!")
     }
 
-    fun onUndoClicked() = viewModelScope.launch {
+    fun onUndoClicked() {
         val data = cache.remove(cache.size() - 1)?.get()
         if (data != null) {
             val img = image.value?.data
@@ -71,26 +70,12 @@ class EditViewModel : ViewModel() {
         editEventChannel.send(EditEvent.NavigateToCropScreen(bitmap))
     }
 
-    fun onRotateLeftClicked() = viewModelScope.launch {
-        mRotation -= 90
-        editEventChannel.send(EditEvent.RotateImage(getRotateAnimation(mRotation + 90)))
+    fun onRotateLeftClicked() {
         rotateBitmap(-90F)
     }
 
-    fun onRotateRightClicked() = viewModelScope.launch {
-        mRotation += 90
-        editEventChannel.send(EditEvent.RotateImage(getRotateAnimation(mRotation - 90)))
+    fun onRotateRightClicked() {
         rotateBitmap(90F)
-    }
-
-    private fun getRotateAnimation(fromDegrees: Float): RotateAnimation {
-        val rotateAnimation = RotateAnimation(
-            fromDegrees, mRotation, RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-            RotateAnimation.RELATIVE_TO_SELF, 0.5f
-        )
-        rotateAnimation.duration = 350
-        rotateAnimation.fillAfter = true
-        return rotateAnimation
     }
 
     private fun rotateBitmap(degrees: Float) {
@@ -100,7 +85,8 @@ class EditViewModel : ViewModel() {
         var bitmap = img.bitmap!!
         matrix.postRotate(degrees)
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        image.value!!.data?.bitmap = bitmap
+        img.bitmap = bitmap
+        image.value = Response.success(img)
     }
 
     private fun saveImage(activity: FragmentActivity): File? {
@@ -142,6 +128,5 @@ class EditViewModel : ViewModel() {
     sealed class EditEvent {
         data class NavigateToCropScreen(val bitmap: Bitmap) : EditEvent()
         data class NavigateBackWithResult(val image: Image?) : EditEvent()
-        data class RotateImage(val rotateAnimation: RotateAnimation) : EditEvent()
     }
 }

@@ -117,7 +117,7 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun createTempFile(activity: FragmentActivity): Uri? {
-        val sdf = SimpleDateFormat("dd-MM-yy hh_mm a", Locale.ENGLISH)
+        val sdf = SimpleDateFormat("dd-MM-yy hh_mm_ss a", Locale.ENGLISH)
         val fileName = "Image ${sdf.format(Date())}.jpg"
         try {
             val root = File(activity.cacheDir.toString())

@@ -38,11 +38,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         setFragmentResultListener(Constants.EDIT_REQUEST) { _, bundle ->
             val result = bundle.get(Constants.EDIT_RESPONSE) as Image?
-            if (result != null) {
-                viewModel.image.value = Response.success(result)
-            } else {
-                viewModel.image.value = Response.success(null)
-            }
+            viewModel.image.value = Response.success(result)
         }
 
         viewModel.image.observe(viewLifecycleOwner) { response ->
@@ -50,7 +46,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 Status.SUCCESS -> {
                     val image = response.data
                     binding.imageView.setImageBitmap(image?.bitmap)
-                    if(image == null) {
+                    if (image == null) {
                         binding.welcomeText.visibility = View.VISIBLE
                     } else {
                         binding.welcomeText.visibility = View.GONE
@@ -63,7 +59,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         viewModel.permissionRequest.observe(viewLifecycleOwner) { permissionsList ->
-            requestPermissions.launch(permissionsList.toTypedArray())
+            if (permissionsList != null)
+                requestPermissions.launch(permissionsList.toTypedArray())
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -108,10 +105,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val requestPermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            var flag = true
+            var flag = false
             permissions.forEach { permission ->
-                if (!permission.value)
-                    flag = false
+                if (permission.value)
+                    flag = true
             }
             viewModel.onPermissionResult(requireActivity(), flag)
         }
@@ -119,5 +116,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.permissionRequest.value = null
+        viewModel.image.value = null
     }
 }

@@ -50,6 +50,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 Status.SUCCESS -> {
                     val image = response.data
                     binding.imageView.setImageBitmap(image?.bitmap)
+                    if(image == null) {
+                        binding.welcomeText.visibility = View.VISIBLE
+                    } else {
+                        binding.welcomeText.visibility = View.GONE
+                    }
                 }
                 Status.ERROR -> {
                     Snackbar.make(requireView(), response.message, Snackbar.LENGTH_SHORT).show()

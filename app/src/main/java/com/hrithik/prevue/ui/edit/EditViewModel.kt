@@ -54,11 +54,13 @@ class EditViewModel : ViewModel() {
     }
 
     fun onUndoClicked() = viewModelScope.launch {
-        val data = cache.remove(cache.size() - 1)?.get()!!
-        val img = image.value?.data
-        if (img != null) {
-            img.bitmap = data
-            image.value = Response.success(img)
+        val data = cache.remove(cache.size() - 1)?.get()
+        if (data != null) {
+            val img = image.value?.data
+            if (img != null) {
+                img.bitmap = data
+                image.value = Response.success(img)
+            }
         }
     }
 
@@ -102,16 +104,25 @@ class EditViewModel : ViewModel() {
     }
 
     private fun saveImage(activity: FragmentActivity): File? {
-        var file: File? = null
+        val file: File?
         try {
             val root =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
-            val myFile = File("$root/Prevue")
-            myFile.mkdirs()
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val myDir = File(root, "Prevue")
+            if (!myDir.exists()) {
+                if (!myDir.mkdirs()) {
+                    return null
+                }
+            }
             val img = image.value?.data!!
             val fileName = img.name
-            file = File(myFile, fileName)
-            file.createNewFile()
+            file = File(myDir.path + File.separator + fileName)
+            if (file.exists())
+                file.delete()
+            val flag = file.createNewFile()
+            if (!flag) {
+                return null
+            }
             val bitmap = img.bitmap!!
 
             val out = FileOutputStream(file)
@@ -120,10 +131,12 @@ class EditViewModel : ViewModel() {
             out.close()
 
             MediaScannerConnection.scanFile(activity, arrayOf(file.toString()), null) { _, _ -> }
+
+            return file
         } catch (e: Exception) {
             e.printStackTrace()
+            return null
         }
-        return file
     }
 
     sealed class EditEvent {

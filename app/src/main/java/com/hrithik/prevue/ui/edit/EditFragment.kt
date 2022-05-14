@@ -43,7 +43,7 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         setFragmentResultListener(Constants.CROP_REQUEST) { _, bundle ->
             val result = bundle.get(Constants.CROP_RESPONSE) as Bitmap?
             val img = viewModel.image.value
-            if (img != null) {
+            if (img != null && result != null) {
                 img.data?.bitmap = result
                 viewModel.image.value = img
             }
@@ -69,6 +69,7 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                         findNavController().navigate(action)
                     }
                     is EditViewModel.EditEvent.NavigateBackWithResult -> {
+                        Snackbar.make(requireView(), "Image saved successfully", Snackbar.LENGTH_SHORT).show()
                         setFragmentResult(
                             Constants.EDIT_REQUEST,
                             bundleOf(Constants.EDIT_RESPONSE to event.image)

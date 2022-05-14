@@ -4,9 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.hrithik.prevue.ui.edit.EditViewModel" />
+
         <variable
             name="activity"
             type="androidx.fragment.app.FragmentActivity" />
@@ -28,9 +30,10 @@
                 android:id="@+id/cancel_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cancel_button"
                 android:onClick="@{()->viewModel.onCancelClicked()}"
-                android:src="@drawable/cancel_icon"
-                android:contentDescription="@string/cancel_button" />
+                android:src="@drawable/cancel_icon" />
 
             <View
                 android:layout_width="0dp"
@@ -41,9 +44,10 @@
                 android:id="@+id/save_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/save_button"
                 android:onClick="@{()->viewModel.onSaveClicked(activity)}"
-                android:src="@drawable/save_icon"
-                android:contentDescription="@string/save_button" />
+                android:src="@drawable/save_icon" />
 
         </LinearLayout>
 
@@ -67,6 +71,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
                 android:onClick="@{()->viewModel.onUndoClicked()}"
                 android:text="@string/undo"
@@ -76,6 +81,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
                 android:onClick="@{()->viewModel.onCropClicked()}"
                 android:text="@string/crop"
@@ -85,6 +91,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
                 android:onClick="@{()->viewModel.onRotateLeftClicked()}"
                 android:text="@string/rotate_left"
@@ -94,6 +101,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:gravity="center"
                 android:onClick="@{()->viewModel.onRotateRightClicked()}"
                 android:text="@string/rotate_right"

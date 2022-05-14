@@ -70,7 +70,11 @@ class HomeViewModel : ViewModel() {
     fun onPermissionResult(activity: FragmentActivity, granted: Boolean) {
         if (granted) {
             val uri = createTempFile(activity)
-            openGalleryOrCamera(uri)
+            if (uri != null) {
+                openGalleryOrCamera(uri)
+            } else {
+                image.value = Response.error("Error occurred in creating the file")
+            }
         } else {
             image.value = Response.error("Storage and camera permissions required to proceed!")
         }
@@ -88,55 +92,57 @@ class HomeViewModel : ViewModel() {
         val permissionsList = LinkedList<String>()
         permissionsList.add(Manifest.permission.CAMERA)
         permissionsList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        permissionsList.add(Manifest.permission.READ_EXTERNAL_STORAGE)
 
-        val requestPermissionsList = LinkedList<String>()
         var flag = true
+        val requestList = LinkedList<String>()
 
         permissionsList.forEach { permission ->
-            if (ContextCompat.checkSelfPermission(
+            requestList.add(permission)
+            val permissionStatus = ContextCompat.checkSelfPermission(activity, permission)
+            if (permissionStatus == PackageManager.PERMISSION_DENIED) {
+                flag = ActivityCompat.shouldShowRequestPermissionRationale(
                     activity,
                     permission
-                ) == PackageManager.PERMISSION_DENIED
-            ) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(
-                        activity,
-                        permission
-                    )
-                ) {
-                    flag = true
-                    requestPermissionsList.add(permission)
-                }
-            } else {
-                flag = false
+                )
+            } else if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+                requestList.remove(permission)
             }
         }
-        if (flag)
-            permissionRequest.value = requestPermissionsList
+
+        if (requestList.isNotEmpty())
+            permissionRequest.value = requestList
         else
-            onPermissionResult(activity, true)
+            onPermissionResult(activity, flag)
     }
 
-    private fun createTempFile(activity: FragmentActivity): Uri {
-        val sdf = SimpleDateFormat("File-ddMMyy-hhmmss.SSS.jpg", Locale.ENGLISH)
-        val fileName = sdf.format(Date())
-        val root = File(activity.cacheDir.toString())
-        if (!root.exists())
-            root.mkdir()
-        val file = File(root, fileName)
-        val uri = FileProvider.getUriForFile(
-            activity,
-            BuildConfig.APPLICATION_ID + ".provider",
-            file
-        )
-        val img = Image(fileName, uri, file.path, null)
-        image.value = Response.success(img)
-        return uri
+    private fun createTempFile(activity: FragmentActivity): Uri? {
+        val sdf = SimpleDateFormat("dd-MM-yy hh_mm a", Locale.ENGLISH)
+        val fileName = "Image ${sdf.format(Date())}.jpg"
+        try {
+            val root = File(activity.cacheDir.toString())
+            if (!root.exists())
+                root.mkdir()
+            val file = File(root, fileName)
+            val uri = FileProvider.getUriForFile(
+                activity,
+                BuildConfig.APPLICATION_ID + ".provider",
+                file
+            )
+            val img = Image(fileName, uri, file.path, null)
+            image.value = Response.success(img)
+            return uri
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 
     private fun openGalleryOrCamera(uri: Uri) = viewModelScope.launch {
         var intent = Intent()
         if (uploadType == UploadType.GALLERY) {
             intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            intent.type = "image/*"
             homeEventChannel.send(HomeEvent.OpenGallery(intent))
         } else if (uploadType == UploadType.CAMERA) {
             intent.action = MediaStore.ACTION_IMAGE_CAPTURE

@@ -25,6 +25,7 @@
                 android:id="@+id/cancel_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/cancel_button"
                 android:onClick="@{()->viewModel.onCancelClicked()}"
                 android:src="@drawable/cancel_icon" />
@@ -38,6 +39,7 @@
                 android:id="@+id/save_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/save_button"
                 android:onClick="@{()->viewModel.onDoneClicked()}"
                 android:src="@drawable/save_icon" />

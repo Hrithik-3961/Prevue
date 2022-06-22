@@ -10,4 +10,20 @@
     <string name="cancel_button">Cancel Button</string>
     <string name="preview_image">Preview Image</string>
     <string name="welcome_message">Welcome to Prevue!\n\nClick on the Upload button to take selfie or pick image from gallery.</string>
+
+    <!-- Real -->
+    <string name="admob_app_id">ca-app-pub-5909989608288926~1875649215</string>
+    <string name="admob_app_open">ca-app-pub-5909989608288926/2749747184</string>
+    <string name="admob_banner">ca-app-pub-5909989608288926/1684077522</string>
+    <string name="admob_interstitial">ca-app-pub-5909989608288926/7810502175</string>
+
+
+    <!--  Test
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_app_open">ca-app-pub-3940256099942544/3419835294</string>
+    <string name="admob_banner">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="admob_interstitial">ca-app-pub-3940256099942544/1033173712</string>
+
+    -->
+
 </resources>

@@ -14,6 +14,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.material.snackbar.Snackbar
 import com.hrithik.prevue.R
 import com.hrithik.prevue.databinding.FragmentEditBinding
@@ -27,7 +30,16 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
     private var _binding: FragmentEditBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var adView: AdView
+    private var mInterstitialAd: InterstitialAd? = null
+
     private val viewModel: EditViewModel by viewModels()
+
+    private val adSize: AdSize
+        get() {
+            val windowWidth = activity!!.resources.configuration.screenWidthDp
+            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity!!, windowWidth)
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,6 +49,11 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         _binding = FragmentEditBinding.inflate(layoutInflater, container, false)
         binding.viewModel = viewModel
         binding.activity = activity
+
+        adView = AdView(requireContext())
+        binding.llAdView.addView(adView)
+        loadBannerAd()
+        loadInterstitialAd()
 
         val callback: OnBackPressedCallback =
             object : OnBackPressedCallback(true) {
@@ -78,24 +95,72 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                         findNavController().navigate(action)
                     }
                     is EditViewModel.EditEvent.NavigateBackWithResult -> {
-                        if (event.image != null) {
-                            Snackbar.make(
-                                requireView(),
-                                "Image saved successfully",
-                                Snackbar.LENGTH_SHORT
-                            ).show()
+                        if(mInterstitialAd != null) {
+                            mInterstitialAd!!.show(requireActivity())
+                            mInterstitialAd!!.fullScreenContentCallback = object :
+                                FullScreenContentCallback() {
+                                override fun onAdDismissedFullScreenContent() {
+                                    mInterstitialAd = null
+                                    resumeActivity(event)
+                                }
+                                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                    mInterstitialAd = null
+                                }
+                                override fun onAdShowedFullScreenContent() {
+                                }
+                            }
+                        } else {
+                            resumeActivity(event)
                         }
-                        setFragmentResult(
-                            Constants.EDIT_REQUEST,
-                            bundleOf(Constants.EDIT_RESPONSE to event.image)
-                        )
-                        findNavController().popBackStack()
                     }
                 }
             }
         }
 
         return binding.root
+    }
+
+    private fun loadBannerAd() {
+        adView.adUnitId = getString(R.string.admob_banner)
+        adView.setAdSize(adSize)
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+
+        adView.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+                binding.llAdView.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun loadInterstitialAd() {
+        val adRequest = AdRequest.Builder().build()
+        InterstitialAd.load(requireContext(), getString(R.string.admob_interstitial), adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    mInterstitialAd = interstitialAd
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    mInterstitialAd = null
+                }
+            })
+    }
+
+    private fun resumeActivity(event: EditViewModel.EditEvent.NavigateBackWithResult) {
+        if (event.image != null) {
+            Snackbar.make(
+                requireView(),
+                "Image saved successfully",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
+        setFragmentResult(
+            Constants.EDIT_REQUEST,
+            bundleOf(Constants.EDIT_RESPONSE to event.image)
+        )
+        findNavController().popBackStack()
     }
 
     override fun onDestroy() {

@@ -61,7 +61,7 @@ class MyApplication : Application() {
             get() = AdRequest.Builder().build()
 
         private val isAdAvailable: Boolean
-          get() = appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4)
+            get() = appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4)
 
         fun fetchAd(context: Context) {
             if (isAdAvailable) {
@@ -78,8 +78,10 @@ class MyApplication : Application() {
             }
             val request: AdRequest = getAdRequest
             AppOpenAd.load(
-                myApplication!!, context.getString(R.string.admob_app_open), request,
-                AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT, loadCallback as AppOpenAdLoadCallback
+                myApplication!!,
+                context.getString(R.string.admob_app_open),
+                request,
+                loadCallback as AppOpenAdLoadCallback
             )
         }
 

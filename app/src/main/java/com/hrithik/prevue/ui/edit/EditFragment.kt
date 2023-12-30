@@ -37,8 +37,8 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
 
     private val adSize: AdSize
         get() {
-            val windowWidth = activity!!.resources.configuration.screenWidthDp
-            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity!!, windowWidth)
+            val windowWidth = requireActivity().resources.configuration.screenWidthDp
+            return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(requireActivity(), windowWidth)
         }
 
     override fun onCreateView(

@@ -29,7 +29,7 @@ class CropViewModel : ViewModel() {
     }
 
     sealed class CropEvent {
-        object GetCroppedImage : CropEvent()
+        data object GetCroppedImage : CropEvent()
         data class NavigateBackWithResult(val bitmap: Bitmap?) : CropEvent()
     }
 

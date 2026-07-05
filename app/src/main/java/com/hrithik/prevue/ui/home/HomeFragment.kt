@@ -105,12 +105,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val requestPermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            var flag = false
-            permissions.forEach { permission ->
-                if (permission.value)
-                    flag = true
-            }
-            viewModel.onPermissionResult(requireActivity(), flag)
+            val allGranted = permissions.values.all { it }
+            viewModel.onPermissionResult(requireActivity(), allGranted)
         }
 
     override fun onDestroy() {

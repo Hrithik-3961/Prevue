@@ -9,7 +9,6 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
@@ -76,7 +75,7 @@ class HomeViewModel : ViewModel() {
                 image.value = Response.error("Error occurred in creating the file")
             }
         } else {
-            image.value = Response.error("Storage and camera permissions required to proceed!")
+            image.value = Response.error("Permissions are required to use this feature")
         }
     }
 
@@ -89,31 +88,25 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun checkPermissions(activity: FragmentActivity) {
-        val permissionsList = LinkedList<String>()
+        val permissionsList = mutableListOf<String>()
         permissionsList.add(Manifest.permission.CAMERA)
-        permissionsList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        permissionsList.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionsList.add(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            permissionsList.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
 
-        var flag = true
-        val requestList = LinkedList<String>()
-
+        val requestList = mutableListOf<String>()
         permissionsList.forEach { permission ->
-            requestList.add(permission)
-            val permissionStatus = ContextCompat.checkSelfPermission(activity, permission)
-            if (permissionStatus == PackageManager.PERMISSION_DENIED) {
-                flag = ActivityCompat.shouldShowRequestPermissionRationale(
-                    activity,
-                    permission
-                )
-            } else if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-                requestList.remove(permission)
+            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                requestList.add(permission)
             }
         }
 
         if (requestList.isNotEmpty())
             permissionRequest.value = requestList
         else
-            onPermissionResult(activity, flag)
+            onPermissionResult(activity, true)
     }
 
     private fun createTempFile(activity: FragmentActivity): Uri? {

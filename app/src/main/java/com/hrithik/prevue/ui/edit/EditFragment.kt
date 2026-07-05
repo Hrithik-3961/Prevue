@@ -105,6 +105,7 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                                 }
                                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                                     mInterstitialAd = null
+                                    resumeActivity(event)
                                 }
                                 override fun onAdShowedFullScreenContent() {
                                 }

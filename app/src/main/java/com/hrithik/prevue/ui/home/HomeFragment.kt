@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -66,6 +68,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.homeEvents.collect { event ->
                 when (event) {
+                    is HomeViewModel.HomeEvent.OpenGalleryPicker -> {
+                        pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                    }
                     is HomeViewModel.HomeEvent.OpenGallery -> {
                         uploadImageResultLauncher.launch(event.intent)
                     }
@@ -82,6 +87,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
         return binding.root
     }
+
+    private val pickMedia =
+        registerForActivityResult(PickVisualMedia()) { uri ->
+            if (uri != null) {
+                viewModel.onImagePicked(uri, requireActivity())
+            } else {
+                viewModel.image.value = Response.error("No image selected")
+            }
+        }
 
     private val uploadImageResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

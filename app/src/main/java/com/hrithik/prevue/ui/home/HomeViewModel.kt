@@ -39,9 +39,8 @@ class HomeViewModel : ViewModel() {
 
     private var uploadType = UploadType.NONE
 
-    fun onUploadFromGalleryClicked(activity: FragmentActivity) = viewModelScope.launch {
-        uploadType = UploadType.GALLERY
-        checkPermissions(activity)
+    fun onUploadFromGalleryClicked() = viewModelScope.launch {
+        homeEventChannel.send(HomeEvent.OpenGalleryPicker)
     }
 
     fun onTakeSelfieClicked(activity: FragmentActivity) = viewModelScope.launch {
@@ -50,7 +49,11 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onImagePicked(uri: Uri, activity: FragmentActivity) = viewModelScope.launch {
-        val img = image.value?.data
+        var img = image.value?.data
+        if (img == null) {
+            createTempFile(activity)
+            img = image.value?.data
+        }
         if (img != null) {
             img.bitmap = getBitmap(uri, activity)
             homeEventChannel.send(HomeEvent.NavigateToEditScreen(img))
@@ -88,19 +91,11 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun checkPermissions(activity: FragmentActivity) {
-        val permissionsList = mutableListOf<String>()
-        permissionsList.add(Manifest.permission.CAMERA)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissionsList.add(Manifest.permission.READ_MEDIA_IMAGES)
-        } else {
-            permissionsList.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-
+        val permission = Manifest.permission.CAMERA
         val requestList = mutableListOf<String>()
-        permissionsList.forEach { permission ->
-            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                requestList.add(permission)
-            }
+
+        if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+            requestList.add(permission)
         }
 
         if (requestList.isNotEmpty())
@@ -146,6 +141,7 @@ class HomeViewModel : ViewModel() {
     }
 
     sealed class HomeEvent {
+        object OpenGalleryPicker : HomeEvent()
         data class OpenGallery(val intent: Intent) : HomeEvent()
         data class OpenCamera(val intent: Intent) : HomeEvent()
         data class NavigateToEditScreen(val image: Image) : HomeEvent()
